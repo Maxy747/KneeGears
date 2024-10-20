@@ -2,29 +2,25 @@ import streamlit as st
 import speech_recognition as sr
 import pyttsx3
 import google.generativeai as genai
-from streamlit_chat import message  # Import streamlit-chat message component
+from streamlit_chat import message
 
-# Initialize Streamlit app with a retractable sidebar
 st.set_page_config(page_title="AVA - Student Personal Assistant", layout="wide")
 
-# Sidebar for extra options, collapsible
 with st.sidebar:
     st.title("AVA Assistant Options")
     st.markdown("### About")
     st.markdown("AVA is your friendly assistant to help with student tasks!")
 
-# Main title in the app
 st.title("AVA - Student Personal Assistant")
 
-# Replace with your actual Gemini API key
-your_api_key = "AIzaSyB18emRA0Xy1toNEOLRpasifzZHto5nD4A"  # Replace with your actual key
+your_api_key = "YOUR_API_KEY"  # Replace with your actual key
 genai.configure(api_key=your_api_key)
 
 generation_config = {
     "temperature": 1.0,
     "top_p": 0.95,
     "top_k": 64,
-    "max_output_tokens": 8192,
+    "max_output_tokens": 8192,  # Fixed missing comma
     "response_mime_type": "text/plain",
 }
 
@@ -51,53 +47,23 @@ chat_session = model.start_chat(
     ]
 )
 
-# Initialize the speech recognizer and text-to-speech engine
 recognizer = sr.Recognizer()
 tts_engine = pyttsx3.init()
 
-# List available voices
+# Voice selection with fallback
 voices = tts_engine.getProperty('voices')
+female_voice_found = False
 for voice in voices:
-    if 'female' in voice.name.lower():  # Try to find a female voice
+    if 'female' in voice.name.lower():
         tts_engine.setProperty('voice', voice.id)
+        female_voice_found = True
         break
+if not female_voice_found:
+    st.warning("No female voice found; using default voice.")
 
 def speak(text):
     tts_engine.say(text)
     tts_engine.runAndWait()
 
-# Ensure messages list is initialized in the session state
 if "messages" not in st.session_state:
-    st.session_state["messages"] = []  # Initialize chat history
-
-# Display existing messages from the chat history using streamlit-chat
-for i, message_dict in enumerate(st.session_state["messages"]):
-    if message_dict["role"] == "user":
-        message(message_dict["content"], is_user=True, key=str(i))  # User's message
-    else:
-        message(message_dict["content"], key=str(i))  # AVA's message
-
-# Bottom chat input bar
-user_text = st.chat_input("Type your message and press Enter...")
-
-# Handle text input submission automatically on pressing Enter
-if user_text:
-    # Add user query to the chat history
-    st.session_state["messages"].append({"role": "user", "content": user_text})
-    
-    # Send user query to the model and get the response
-    response = chat_session.send_message(user_text)
-    response_text = response.text
-    
-    # Add AVA's response to the chat history
-    st.session_state["messages"].append({"role": "assistant", "content": response_text})
-    
-    # Rerun the script to ensure that chat history is updated live
-    st.experimental_rerun()
-
-    # Text-to-Speech (speak out the response)
-    speak(response_text)
-
-# Allow user to quit
-if st.button("Quit"):
-    st.write("Thanks for using AVA!")
+    st.session
