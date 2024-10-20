@@ -1,8 +1,8 @@
-import streamlit as st
-import speech_recognition as sr
-import pyttsx3
-import google.generativeai as genai
-from streamlit_chat import message  # Import streamlit-chat message component
+import streamlit as st # type: ignore
+import speech_recognition as sr # type: ignore
+import pyttsx3 # type: ignore
+import google.generativeai as genai # type: ignore
+from streamlit_chat import message  # type: ignore # Import streamlit-chat message component
 
 # Initialize Streamlit app with a retractable sidebar
 st.set_page_config(page_title="AVA - Student Personal Assistant", layout="wide")
