@@ -65,7 +65,7 @@ for voice in voices:
 def speak(text):
     tts_engine.say(text)
     tts_engine.runAndWait()
-
+######################################################################
 # Helper function to display chat messages as text bubbles
 def display_chat_bubble(user_message, ava_message):
     col1, col2 = st.columns([1, 4])  # Two columns for alternating messages
@@ -75,7 +75,7 @@ def display_chat_bubble(user_message, ava_message):
         st.markdown(f'<div style="background-color:#E2F0F9; padding: 10px; border-radius: 10px;"><strong>User:</strong> {user_message}</div>', unsafe_allow_html=True)
 
     col2, col1 = st.columns([4, 1])  # Reverse for AVA's response
-    with col2:
+    with col2: 
         st.markdown(f'<div style="background-color:#D5E8D4; padding: 10px; border-radius: 10px;"><strong>AVA:</strong> {ava_message}</div>', unsafe_allow_html=True)
     with col1:
         st.image("https://user-images.githubusercontent.com/800545/63263082-91e19480-c265-11e9-9951-431b27a6ea7b.png", width=40)  # Placeholder AVA avatar

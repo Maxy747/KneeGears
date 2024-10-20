@@ -93,7 +93,7 @@ if user_text:
     st.session_state["messages"].append({"role": "assistant", "content": response_text})
     
     # Rerun the script to ensure that chat history is updated live
-    st.experimental_rerun()
+ 
 
     # Text-to-Speech (speak out the response)
     speak(response_text)

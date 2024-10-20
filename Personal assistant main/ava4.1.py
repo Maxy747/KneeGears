@@ -65,7 +65,7 @@ for voice in voices:
 def speak(text):
     tts_engine.say(text)
     tts_engine.runAndWait()
-
+###################################################################
 # Ensure messages list is initialized in the session state
 if "messages" not in st.session_state:
     st.session_state["messages"] = []  # Initialize chat history

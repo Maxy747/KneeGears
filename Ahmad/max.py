@@ -7,7 +7,6 @@ import html
 import io
 import pyttsx3
 import threading
-import distutils
 
 # Initialize Streamlit app with a retractable sidebar
 st.set_page_config(page_title="MAX - Student Personal Assistant", layout="wide")
