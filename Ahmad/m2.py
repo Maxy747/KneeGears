@@ -69,7 +69,6 @@ def clean_text(text):
     return re.sub(r'[^a-zA-Z0-9\s]', '', text)
 
 # Text-to-Speech (speak out the response)
-# Text-to-Speech (speak out the response)
 def speak(text):
     cleaned_text = clean_text(text)
     try:

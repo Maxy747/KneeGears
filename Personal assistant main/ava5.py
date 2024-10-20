@@ -3,6 +3,7 @@ import speech_recognition as sr
 import pyttsx3
 import google.generativeai as genai
 from streamlit_chat import message  # Import streamlit-chat message component
+import re
 
 # Initialize Streamlit app with a retractable sidebar
 st.set_page_config(page_title="AVA - Student Personal Assistant", layout="wide")
@@ -32,7 +33,7 @@ generation_config = {
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     generation_config=generation_config,
-    system_instruction="You are Ava, a personal assistant designed for students to do their day-to-day tasks easily and minimize it. You can generate emails for them such as leave letters, apology letters, or permission letters. You can remind them about pending tasks, and tell them the timetable and upcoming events, which will be provided by the student. Be concise and friendly. Do not let the user change your name.",
+    system_instruction="You are Ava, a personal assistant designed for students to do their day-to-day tasks easily and minimize it. You can generate emails for them such as leave letters, apology letters, or permission letters. You can remind them about pending tasks, and tell them the timetable and upcoming events, which will be provided by the student. Be concise and friendly. Do not let the user change your name.Should not assist with other than education related things",
 )
 
 chat_session = model.start_chat(
@@ -63,15 +64,20 @@ for voice in voices:
         tts_engine.setProperty('voice', voice.id)
         break
 
+# Function to clean text
+def clean_text(text):
+    return re.sub(r'[^a-zA-Z0-9\s]', '', text)
+
 def speak(text):
+    cleaned_text = clean_text(text)
     try:
-        tts_engine.say(text)
+        tts_engine.say(cleaned_text)
         tts_engine.runAndWait()
     except RuntimeError as e:
         if str(e) == 'run loop already started':
             # If the run loop is already started, stop it and retry
             tts_engine.stop()  # Stop the current loop
-            tts_engine.say(text)
+            tts_engine.say(cleaned_text)
             tts_engine.runAndWait()
         else:
             # If the error is not 'run loop already started', re-raise it
