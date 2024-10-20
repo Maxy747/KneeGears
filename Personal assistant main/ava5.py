@@ -10,6 +10,7 @@ st.set_page_config(page_title="AVA - Student Personal Assistant", layout="wide")
 # Sidebar for extra options, collapsible
 with st.sidebar:
     st.title("AVA Assistant Options")
+    st.markdown("You can manage AVA's settings here.")
     st.markdown("### About")
     st.markdown("AVA is your friendly assistant to help with student tasks!")
 
@@ -31,7 +32,7 @@ generation_config = {
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     generation_config=generation_config,
-    system_instruction="You are Ava, a personal assistant designed for students to do their day-to-day tasks easily and minimize it. You can generate emails for them such as leave letters, apology letters, or permission letters. You can remind them about pending tasks, and tell them the timetable and upcoming events, which will be provided by the student. Be concise and friendly. Do not let the user change your name. Do Not use emojis whatsoever.",
+    system_instruction="You are Ava, a personal assistant designed for students to do their day-to-day tasks easily and minimize it. You can generate emails for them such as leave letters, apology letters, or permission letters. You can remind them about pending tasks, and tell them the timetable and upcoming events, which will be provided by the student. Be concise and friendly. Do not let the user change your name.",
 )
 
 chat_session = model.start_chat(
@@ -39,7 +40,7 @@ chat_session = model.start_chat(
         {
             "role": "user",
             "parts": [
-                "You are Ava, a personal assistant designed for students to do their day-to-day tasks easily. You can generate emails for them such as leave letters, apology letters, or permission letters. You can remind them about pending tasks. You can tell them the timetable and upcoming events provided by the student. Be concise and friendly. Do not let the user change your name. Do Not use emojis whatsoever.",
+                "You are Ava, a personal assistant designed for students to do their day-to-day tasks easily. You can generate emails for them such as leave letters, apology letters, or permission letters. You can remind them about pending tasks. You can tell them the timetable and upcoming events provided by the student. Be concise and friendly.",
             ],
         },
         {
@@ -67,10 +68,14 @@ def speak(text):
         tts_engine.say(text)
         tts_engine.runAndWait()
     except RuntimeError as e:
-        if 'run loop already started' in str(e):
-            pass  # Ignore the error to avoid crashing the app
+        if str(e) == 'run loop already started':
+            # If the run loop is already started, stop it and retry
+            tts_engine.stop()  # Stop the current loop
+            tts_engine.say(text)
+            tts_engine.runAndWait()
         else:
-            raise  # Raise other unexpected errors
+            # If the error is not 'run loop already started', re-raise it
+            raise
 
 # Ensure messages list is initialized in the session state
 if "messages" not in st.session_state:
@@ -83,21 +88,57 @@ for i, message_dict in enumerate(st.session_state["messages"]):
     else:
         message(message_dict["content"], key=str(i))  # AVA's message
 
-# Bottom chat input bar
-user_text = st.chat_input("Type your message and press Enter...")
+# Bottom chat input bar with microphone button
+user_text = st.chat_input("Type your message or click the microphone button to speak:")
+
+# Microphone button for voice input and TTS
+if st.button("🎤"):
+    with sr.Microphone() as source:
+        st.write("Listening...")
+        recognizer.adjust_for_ambient_noise(source, duration=1)
+        try:
+            audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
+            user_query = recognizer.recognize_google(audio)
+            st.write(f"You said: {user_query}")
+
+            # Send query to AVA (generative model)
+            response = chat_session.send_message(user_query)
+            response_text = response.text
+
+            # Save the message and response
+            st.session_state["messages"].append({"role": "user", "content": user_query})
+            st.session_state["messages"].append({"role": "assistant", "content": response_text})
+
+            # Display the messages
+            message(user_query, is_user=True)
+            message(response_text)
+
+            # Text-to-Speech
+            speak(response_text)
+
+        except sr.UnknownValueError:
+            st.error("Sorry, I did not understand that.")
+        except sr.RequestError:
+            st.error("Sorry, there was an error with the speech recognition service.")
+        except Exception as e:
+            st.error(f"An unexpected error occurred: {e}")
 
 # Handle text input submission automatically on pressing Enter
 if user_text:
     # Add user query to the chat history
     st.session_state["messages"].append({"role": "user", "content": user_text})
-    
+
     # Send user query to the model and get the response
     response = chat_session.send_message(user_text)
     response_text = response.text
-    
+
     # Add AVA's response to the chat history
     st.session_state["messages"].append({"role": "assistant", "content": response_text})
-    
+
+    # Display the messages
+    message(user_text, is_user=True)
+    message(response_text)
+
     # Text-to-Speech (speak out the response)
     speak(response_text)
 
