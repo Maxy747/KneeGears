@@ -67,16 +67,10 @@ def speak(text):
         tts_engine.say(text)
         tts_engine.runAndWait()
     except RuntimeError as e:
-        if str(e) == 'run loop already started':
-            # If the run loop is already started, stop it and retry
-            tts_engine.stop()  # Stop the current loop
-            tts_engine.say(text)
-            tts_engine.runAndWait()
+        if 'run loop already started' in str(e):
+            pass  # Ignore the error to avoid crashing the app
         else:
-            # If the error is not 'run loop already started', re-raise it
-            raise
-
-
+            raise  # Raise other unexpected errors
 
 # Ensure messages list is initialized in the session state
 if "messages" not in st.session_state:
@@ -106,9 +100,6 @@ if user_text:
     
     # Text-to-Speech (speak out the response)
     speak(response_text)
-    
-    # Ensure that the app layout updates with new messages (no need to rerun the script)
-    st.experimental_update()
 
 # Allow user to quit
 if st.button("Quit"):
