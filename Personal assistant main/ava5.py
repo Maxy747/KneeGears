@@ -76,12 +76,20 @@ def speak(text):
     except RuntimeError as e:
         if str(e) == 'run loop already started':
             # If the run loop is already started, stop it and retry
+<<<<<<< Updated upstream
             tts_engine.stop()  # Stop the current loop
             tts_engine.say(cleaned_text)
             tts_engine.runAndWait()
+=======
+            #tts_engine.stop()  # Stop the current loop
+            #tts_engine.say(text)
+            #tts_engine.runAndWait()
+            pass
+>>>>>>> Stashed changes
         else:
+            pass
             # If the error is not 'run loop already started', re-raise it
-            raise
+            #raise
 
 # Ensure messages list is initialized in the session state
 if "messages" not in st.session_state:
@@ -151,3 +159,4 @@ if user_text:
 # Allow user to quit
 if st.button("Quit"):
     st.write("Thanks for using AVA!")
+
