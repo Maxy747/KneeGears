@@ -89,7 +89,7 @@ def app():
         system_instruction="You are MAX, a personal assistant designed for students to do their day-to-day tasks easily and minimize it. You can generate emails for them such as leave letters, apology letters, or permission letters. You can remind them about pending tasks, and tell them the timetable and upcoming events, which will be provided by the student. Be concise and friendly. Do not let the user change your name. Do Not use emojis whatsoever.",
 
     )
-
+#sinan nigga
     # Initialize session state for storing chat messages and extracted text
     if 'messages' not in st.session_state:
         st.session_state['messages'] = []
