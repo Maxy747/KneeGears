@@ -126,6 +126,43 @@ if st.button("🎤"):
         except Exception as e:
             st.error(f"An unexpected error occurred: {e}")
 
+if user_text:
+    if user_text.startswith("play youtube"):
+        # Extract video title from user input
+        try:
+            _, *video_title_parts = user_text.split()
+            video_title = ' '.join(video_title_parts)
+            kit.playonyt(video_title)  # Play the YouTube video based on the title provided
+            st.success(f"Playing video: {video_title}")
+        except Exception as e:
+            st.error(f"Failed to play video: {e}")
+    elif user_text.startswith("send whatsapp"):
+        # Extract phone number and message from user input
+        try:
+            _, phone_number, *message_parts = user_text.split()
+            message_to_send = ' '.join(message_parts)
+            kit.sendwhatmsg_instantly(phone_number, message_to_send)
+            st.success(f"Message sent to {phone_number}!")
+        except Exception as e:
+            st.error(f"Failed to send WhatsApp message: {e}")
+    else:
+        # Add user query to the chat history
+        st.session_state["messages"].append({"role": "user", "content": user_text})
+
+        # Send user query to the model and get the response
+        response = chat_session.send_message(user_text)
+        response_text = response.text
+
+        # Add MAX's response to the chat history
+        st.session_state["messages"].append({"role": "assistant", "content": response_text})
+
+        # Display the messages
+        message(user_text, is_user=True)
+        message(response_text)
+
+        # Text-to-Speech (speak out the response)
+        speak(response_text)
+
 # Handle text input submission automatically on pressing Enter
 if user_text:
     if user_text.startswith("send whatsapp"):
@@ -154,6 +191,21 @@ if user_text:
 
         # Text-to-Speech (speak out the response)
         speak(response_text)
+import streamlit as st
+
+# Hide Streamlit header and footer
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
+# Your Streamlit app code here
+st.title("Hello, Streamlit!")
+st.write("This is a sample app with the header and footer hidden.")
 
 # Allow user to quit
 if st.button("Quit"):
