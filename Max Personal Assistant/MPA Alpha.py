@@ -32,27 +32,12 @@ if 'memory' not in st.session_state:
         'context': []
     }
 
-# Updated question flow for comprehensive diet planning
+# Question flow for recipes
 RECIPE_QUESTIONS = [
-    "What is your height in centimeters?",
-    "What is your weight in kilograms?",
-    "What is your age?",
-    "What is your goal? (lose weight/gain weight/maintain weight)",
-    "Do you have any dietary restrictions or allergies?",
-    "What are your favorite foods or cuisines?",
-    "How many meals do you prefer per day? (2-6)",
-    "Do you prefer vegetarian, non-vegetarian, or both types of food?",
-    "How much time can you spend on cooking per day?"
+    "What are your dietary preferences? Do you have any allergies or restrictions?",
+    "What is your current lifestyle like? Are you active or sedentary?",
+    "What are your cooking skills and how much time do you have to cook?"
 ]
-
-def calculate_bmi(height_cm, weight_kg):
-    try:
-        height_m = float(height_cm) / 100
-        weight = float(weight_kg)
-        bmi = weight / (height_m * height_m)
-        return round(bmi, 2)
-    except:
-        return None
 
 def create_tts_engine():
     engine = pyttsx3.init()
@@ -122,7 +107,7 @@ def get_next_question():
 
 def process_user_input(user_input):
     """Process user input and determine response"""
-    if "healthy recipes" in user_input.lower() or "diet plan" in user_input.lower():
+    if "healthy recipes" in user_input.lower():
         st.session_state.questioning_mode = True
         st.session_state.current_question_index = 0
         response = RECIPE_QUESTIONS[0]
@@ -154,52 +139,24 @@ def process_user_input(user_input):
     return response
 
 def generate_recipe_recommendations():
-    """Generate diet plan based on collected information"""
+    """Generate recipe recommendations based on collected information"""
+    context = "Based on the user's preferences:\n"
+    for i, answer in enumerate(st.session_state.user_info.values()):
+        context += f"- Answer to '{RECIPE_QUESTIONS[i]}': {answer}\n"
+    
+    memory_context = get_memory_context()
+    prompt = f"{memory_context}\n{context}\nProvide 3 specific healthy recipe recommendations that match these preferences. Be concise and direct."
+    
     try:
-        # Extract height and weight from user info
-        height = float(st.session_state.user_info.get('recipe_q_0', 0))
-        weight = float(st.session_state.user_info.get('recipe_q_1', 0))
-        bmi = calculate_bmi(height, weight)
-        
-        context = "Based on the user's information:\n"
-        context += f"BMI: {bmi}\n"
-        
-        # Add all collected information
-        for i, answer in enumerate(st.session_state.user_info.values()):
-            context += f"- Answer to '{RECIPE_QUESTIONS[i]}': {answer}\n"
-        
-        memory_context = get_memory_context()
-        prompt = f"""{memory_context}\n{context}
-Based on this information, provide:
-1. BMI Category and what it means
-2. Daily caloric needs
-3. A detailed 7-day diet plan with 3 meals and 2 snacks that:
-   - Matches their food preferences
-   - Supports their weight goal
-   - Includes portion sizes
-   - Considers their time constraints
-Please format it clearly and make it easy to follow."""
-        
-        try:
-            response = model.generate_content(prompt)
-            return response.text
-        except Exception as e:
-            return "I apologize, but I'm having trouble generating recommendations right now. Could you please try again?"
-            
+        response = model.generate_content(prompt)
+        return response.text
     except Exception as e:
-        return "There was an error processing your information. Please make sure you provided valid numbers for height and weight."
+        return "I apologize, but I'm having trouble generating recommendations right now. Could you please try again?"
 
 def get_bot_response(user_input):
     """Get response from Gemini API for general queries"""
     memory_context = get_memory_context()
-    context = f"""You are MAX, a professional diet planning assistant. Act as a certified nutritionist who:
-- Provides evidence-based dietary advice
-- Creates personalized meal plans
-- Calculates and explains BMI
-- Offers practical nutrition guidance
-Keep responses focused on nutrition and diet advice. Be direct and concise.
-
-Memory Context:\n{memory_context}"""
+    context = f"You are MAX, a professional diet planning assistant. Keep responses focused on nutrition and diet advice. Be direct and concise.\n\nMemory Context:\n{memory_context}"
     prompt = f"{context}\nUser: {user_input}\nMAX:"
     
     try:
