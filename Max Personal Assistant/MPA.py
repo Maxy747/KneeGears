@@ -272,7 +272,7 @@ with input_container:
                     st.session_state.current_message = user_input
                     handle_input(user_input)
                 except Exception as e:
-                    st.error("Could not understand audio")
+                    st.error("Could not understand you, could you repeat?")
 
 # Display chat history in the container
 with chat_container:
