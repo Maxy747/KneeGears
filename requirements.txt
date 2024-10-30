@@ -4,3 +4,4 @@ speech_recognition
 pyttsx3
 google.generativeai
 streamlit_chat
+PyAudio
